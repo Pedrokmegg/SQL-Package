@@ -1,0 +1,45 @@
+CREATE OR REPLACE PACKAGE PKG_DISCIPLINA IS
+    PROCEDURE cadastrar_disciplina(p_nome VARCHAR2, p_descricao VARCHAR2, p_carga_horaria NUMBER);
+    PROCEDURE listar_alunos_disciplina(p_id_disciplina NUMBER);
+    CURSOR total_alunos_por_disciplina;
+    CURSOR media_idade_por_disciplina(p_id_disciplina NUMBER);
+END PKG_DISCIPLINA;
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_DISCIPLINA IS
+    PROCEDURE cadastrar_disciplina(p_nome VARCHAR2, p_descricao VARCHAR2, p_carga_horaria NUMBER) IS
+    BEGIN
+        INSERT INTO disciplina (id_disciplina, nome, descricao, carga_horaria)
+        VALUES (SEQ_DISCIPLINA.NEXTVAL, p_nome, p_descricao, p_carga_horaria);
+        COMMIT;
+    END cadastrar_disciplina;
+
+    CURSOR total_alunos_por_disciplina IS
+        SELECT d.nome, COUNT(m.id_aluno) AS total_alunos
+        FROM disciplina d
+        JOIN turma t ON d.id_disciplina = t.id_disciplina
+        JOIN matricula m ON t.id_turma = m.id_turma
+        GROUP BY d.nome
+        HAVING COUNT(m.id_aluno) > 10;
+
+    CURSOR media_idade_por_disciplina(p_id_disciplina NUMBER) IS
+        SELECT AVG(TRUNC(MONTHS_BETWEEN(SYSDATE, a.data_nascimento) / 12)) AS media_idade
+        FROM matricula m
+        JOIN turma t ON m.id_turma = t.id_turma
+        JOIN aluno a ON m.id_aluno = a.id_aluno
+        WHERE t.id_disciplina = p_id_disciplina;
+
+    PROCEDURE listar_alunos_disciplina(p_id_disciplina NUMBER) IS
+        CURSOR c_alunos IS
+            SELECT a.nome
+            FROM aluno a
+            JOIN matricula m ON a.id_aluno = m.id_aluno
+            JOIN turma t ON m.id_turma = t.id_turma
+            WHERE t.id_disciplina = p_id_disciplina;
+    BEGIN
+        FOR r_aluno IN c_alunos LOOP
+            DBMS_OUTPUT.PUT_LINE(r_aluno.nome);
+        END LOOP;
+    END listar_alunos_disciplina;
+END PKG_DISCIPLINA;
+/
