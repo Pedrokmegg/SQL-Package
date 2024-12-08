@@ -1,0 +1,45 @@
+CREATE TABLE aluno (
+    id_aluno NUMBER PRIMARY KEY,
+    nome VARCHAR2(100),
+    data_nascimento DATE,
+    id_curso NUMBER
+);
+
+CREATE TABLE disciplina (
+    id_disciplina NUMBER PRIMARY KEY,
+    nome VARCHAR2(100),
+    descricao VARCHAR2(255),
+    carga_horaria NUMBER
+);
+
+CREATE TABLE professor (
+    id_professor NUMBER PRIMARY KEY,
+    nome VARCHAR2(100)
+);
+
+CREATE TABLE turma (
+    id_turma NUMBER PRIMARY KEY,
+    id_disciplina NUMBER REFERENCES disciplina(id_disciplina),
+    id_professor NUMBER REFERENCES professor(id_professor)
+);
+
+CREATE TABLE matricula (
+    id_matricula NUMBER PRIMARY KEY,
+    id_aluno NUMBER REFERENCES aluno(id_aluno),
+    id_turma NUMBER REFERENCES turma(id_turma)
+);
+
+-- Pacote PKG_ALUNO
+CREATE OR REPLACE PACKAGE PKG_ALUNO IS
+    PROCEDURE excluir_aluno(p_id_aluno NUMBER);
+    PROCEDURE listar_alunos_disciplina(p_id_disciplina NUMBER);
+    FUNCTION total_alunos_por_disciplina(p_id_disciplina NUMBER) RETURN NUMBER;
+END PKG_ALUNO;
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_ALUNO IS
+    PROCEDURE excluir_aluno(p_id_aluno NUMBER) IS
+    BEGIN
+        DELETE FROM matricula WHERE id_aluno = p_id_aluno;
+        DELETE FROM aluno WHERE id_aluno = p_id_aluno;
+    END excluir_aluno;
