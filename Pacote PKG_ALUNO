@@ -1,0 +1,19 @@
+CREATE OR REPLACE PACKAGE BODY PKG_ALUNO IS
+    PROCEDURE excluir_aluno(p_id_aluno NUMBER) IS
+    BEGIN
+        DELETE FROM matricula WHERE id_aluno = p_id_aluno;
+        DELETE FROM aluno WHERE id_aluno = p_id_aluno;
+        COMMIT;
+    END excluir_aluno;
+
+    CURSOR c_alunos_maiores_18 IS
+        SELECT nome, data_nascimento
+        FROM aluno
+        WHERE TRUNC(MONTHS_BETWEEN(SYSDATE, data_nascimento) / 12) > 18;
+
+    CURSOR c_alunos_por_curso(p_id_curso NUMBER) IS
+        SELECT nome
+        FROM aluno
+        WHERE id_curso = p_id_curso;
+END PKG_ALUNO;
+/
